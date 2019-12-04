@@ -39,12 +39,7 @@ if __name__ == '__main__':
     assert data_path.exists()
 
     # default to in_file + '_processed'
-    out_path = Path(args.out_file or data_path.stem + '_processed.txt')
-    fname = out_path.stem
-    i = 0
-    while out_path.exists():
-        i += 1
-        out_path = Path(fname + f'_{i}{out_path.suffix}')
+    out_path = Path(args.out_file or '../data/raw/processed_reviews.txt')
     print(f'Saving output to {out_path.absolute()}')
 
     print(f'Extracting text from {data_path.name}')
@@ -62,7 +57,7 @@ if __name__ == '__main__':
 
     # print('\nBuilding Vocab')
     # vocab = build_vocab(docs)
-    # with open('artifacts/vocab.pkl', 'wb') as f:
+    # with open('../artifacts/vocab.pkl', 'wb') as f:
     #     pickle.dump(vocab, f)
     #
     # print('\nNumericalizing Documents')
@@ -75,5 +70,5 @@ if __name__ == '__main__':
     #
     # with mp.Pool(mp.cpu_count() - 1) as p:
     #     num_docs = list(tqdm(p.imap(num_all, docs), total=len(lines)))
-    # with open('artifacts/num_docs.pkl', 'wb') as f:
+    # with open('../artifacts/num_docs.pkl', 'wb') as f:
     #     pickle.dump(doc_vectors, f)
