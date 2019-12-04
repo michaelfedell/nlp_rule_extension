@@ -2,7 +2,7 @@ from pathlib import Path
 
 from gensim.models import Word2Vec
 
-CORPUS = Path('../data/raw/reviews.csv')
+CORPUS = Path('../data/raw/processed_reviews.txt')
 
 if __name__ == '__main__':
     w2v = Word2Vec(
