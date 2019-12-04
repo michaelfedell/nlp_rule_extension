@@ -1,0 +1,5 @@
+# MSiA Text Analytics Final Project
+
+This project will explore the combined use of autoencoders and rule-based systems to tag unlabeled data for classification.
+
+The need for labeled data, especially in NLP tasks, cannot be understated. Though unsupervised techniques such as Topic Modeling can help mine insights from unlabeled datasets, in a business context, users often need more fine control over the labels assigned to documents and thus require labels. A common approach is to outsource this labeling to a service such as Mechanical Turk, but even this approach can be inconsistent and insufficient in accuracy. To overcome these problems, this paper proposes a semi-supervised approach in which an expert will define a few simple rules for desired categories, and thene these rules are expanded/augmented by autoencoders to label a greater portion of data. This approach obviously comes with its own limitations, but its performance will be compared to vanilla rule-based systems, MTurk labeled data, and ground truth by evaluating classification models trained on data from each approach.
