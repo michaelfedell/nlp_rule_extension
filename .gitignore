@@ -1,3 +1,13 @@
+# Data should never be shared
+data/
+
+# Same for artifacts
+artifacts/
+
+
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
