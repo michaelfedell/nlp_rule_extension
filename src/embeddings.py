@@ -6,7 +6,7 @@ CORPUS = Path('../data/raw/reviews.csv')
 
 if __name__ == '__main__':
     w2v = Word2Vec(
-        corpus_file=CORPUS.absolute(),
+        corpus_file=str(CORPUS),
         size=300
     )
     word_vec = w2v.wv
