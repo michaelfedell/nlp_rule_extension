@@ -71,7 +71,7 @@ def expand_rules(neighbors: t.Dict[str, t.List[str]]):
 
             # Map the keyword and all of its neighbors to the current category
             for w in neighbors[kw]:
-                if cat_map.get(w) != cat:
+                if cat_map.get(w) is not None and cat_map.get(w) != cat:
                     print(f'WARNING: expanded kw: {w} found in {cat} but '
                           f'already exists in {cat_map.get(w)}... To avoid ambiguity, '
                           f'this word will be removed from mapping entirely')
@@ -101,6 +101,7 @@ def classify(doc: str, use_lemma: bool = False, expand_cat_map: bool = False) ->
     :param expand_cat_map: expand the default_cat_map to include embedded neighbors if true
     :return: string corresponding to category of document (one of keys in RULES)
     """
+    assert not (use_lemma and expand_cat_map)  # cannot currently combine these strategies
     # use kw neighbors to expand category mapping
     cat_map = expanded_cat_map if expand_cat_map else default_cat_map
     # split doc into tokens
@@ -133,7 +134,7 @@ def classify_lemma(doc: str) -> str:
 
 def classify_embedded(doc: str) -> str:
     """Classify a document by keyword frequency including neighbors mined from embedding space"""
-    return classify(doc, use_lemma=True, expand_cat_map=True)
+    return classify(doc, use_lemma=False, expand_cat_map=True)
 
 
 if __name__ == '__main__':
