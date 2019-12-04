@@ -149,12 +149,12 @@ if __name__ == '__main__':
     methods = {
         'naive': classify_naive,
         'lemma': classify_lemma,
-        'embedded': classify_embedded
+        'embedding': classify_embedded
     }
 
     for method in methods:
         print('Producing labels via', method, 'strategy')
         with mp.Pool(mp.cpu_count() - 1) as p:
             labels = list(tqdm(p.imap(methods[method], reviews), total=len(reviews)))
-        with open(f'../data/{method}/labeled_{review_path.name}', 'w', encoding='utf-8') as f:
-            f.writelines(','.join(l) for l in zip(labels, reviews))
+        with open(f'../data/{method}_labeled_{review_path.name}.txt', 'w', encoding='utf-8') as f:
+            f.writelines(labels)
