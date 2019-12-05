@@ -1,12 +1,15 @@
 import pandas as pd
 
 reviews = pd.read_csv('../data/raw/reviews.csv', index_col=0)
+limit = min(len(reviews), 10000)
+reviews = reviews[:limit]
 
-methods = ['naive', 'lemma', 'embedded']
+methods = ['naive', 'lemma', 'embedding', 'manual']
 for method in methods:
-    with open(f'../data/{method}/labeled_reviews.csv') as f:
-        labels = [r.split(',')[0] for r in f]  # just get label from each file, not review text
-        reviews[f'{method}_label'] = labels[:len(reviews)]
+    with open(f'../data/{method}_labeled_reviews.txt') as f:
+        labels = [l.strip() for l in f.readlines()]  # get labels from each text file
+    reviews[f'{method}_label'] = labels[:limit]
 
 labels = reviews.drop(columns='document_text')
 print(labels.apply(lambda x: x.value_counts()))
+labels.to_csv('../data/all_labels.csv')
