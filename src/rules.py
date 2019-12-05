@@ -20,7 +20,7 @@ RULES = {
     'pricing': ['cost', 'cheap', 'expensive'],
     'order_fulfillment': ['deliver', 'pack', 'ship'],
     'customer_service': ['service', 'email', 'refund'],
-    'registry': ['wedding', 'shower', 'register'],
+    'registry': ['wedding', 'shower', 'register', 'registry'],
     'holiday_seasonal': ['season', 'holiday', 'summer']
 }
 
@@ -138,6 +138,13 @@ def classify_embedded(doc: str) -> str:
     return classify(doc, use_lemma=False, expand_cat_map=True)
 
 
+METHODS = {
+    'naive': classify_naive,
+    'lemma': classify_lemma,
+    'embedding': classify_embedded
+}
+
+
 if __name__ == '__main__':
     LIMIT = 10000
 
@@ -148,16 +155,10 @@ if __name__ == '__main__':
     reviews = reviews[:LIMIT] if len(reviews) > LIMIT else reviews
     review_text = reviews.document_text.values
 
-    methods = {
-        'naive': classify_naive,
-        'lemma': classify_lemma,
-        'embedding': classify_embedded
-    }
-
-    for method in methods:
+    for method in METHODS:
         print('Producing labels via', method, 'strategy')
         with mp.Pool(mp.cpu_count() - 1) as p:
-            labels = list(tqdm(p.imap(methods[method], review_text), total=len(reviews)))
+            labels = list(tqdm(p.imap(METHODS[method], review_text), total=len(reviews)))
         with open(f'../data/{method}_labeled_{review_path.stem}.txt', 'w', encoding='utf-8') as f:
             f.writelines(l + '\n' for l in labels)
 
