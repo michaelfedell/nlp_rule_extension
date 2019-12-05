@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 
+from predict import predict
+
 app = Flask(__name__)
 api = Api(app)
 
@@ -18,7 +20,8 @@ class Predict(Resource):
     @staticmethod
     def post():
         args = parser.parse_args()
-        return args['text'], 200
+        prediction = predict(args['text'])
+        return prediction, 200
 
 
 api.add_resource(Check, '/')

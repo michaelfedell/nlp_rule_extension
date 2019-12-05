@@ -4,10 +4,6 @@ import sys
 import joblib
 from gensim.models import KeyedVectors
 
-module_path = os.path.abspath(os.path.join('./'))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
 from embeddings import vectorize
 from preprocess import tokenize
 from rules import METHODS
@@ -19,9 +15,11 @@ models = {m: joblib.load(f'../artifacts/{m}_label_model.joblib') for m in METHOD
 
 
 def predict(doc):
-    doc = tokenize(doc).rstrip()
-    doc_vector = vectorize(doc, word_vec, tfidf)
     predictions = {}
+    predictions['input'] = doc
+    doc = tokenize(doc).rstrip()
+    predictions['tokenized'] = doc
+    doc_vector = vectorize(doc, word_vec, tfidf)
     for method in METHODS:
         predictions[method] = {
             'rule': METHODS[method](doc),
