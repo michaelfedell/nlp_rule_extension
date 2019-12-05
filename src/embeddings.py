@@ -1,15 +1,33 @@
-from pathlib import Path
-import typing as t
 import multiprocessing as mp
-import os
+import typing as t
+from pathlib import Path
 
+import joblib
+import numpy as np
 from gensim.models import Word2Vec, KeyedVectors
 from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
 from tqdm import tqdm
-import joblib
 
 CORPUS = Path('../artifacts/processed_reviews.txt')
+
+
+def vectorize(doc: str, word_vec, tfidf):
+    doc_weight = 0  # total doc_weight captures length of doc
+    # doc_vector will become tfidf-weighted average of w2v vectors
+    doc_vector = np.zeros(word_vec.vector_size)
+    lookup = tfidf.transform([doc])  # get tfidf scores for all words in this document
+    for token in doc.split():
+        try:
+            vector = word_vec.word_vec(token)
+            weight = lookup[0, tfidf.vocabulary_[token]]
+        except KeyError:
+            vector = np.zeros(word_vec.vector_size)
+            weight = 0
+        doc_vector += weight * vector
+        doc_weight += weight
+    if doc_weight == 0:
+        return np.zeros(word_vec.vector_size)
+    return doc_vector / doc_weight
 
 
 def vectorize_all(docs: t.List[str],
@@ -24,24 +42,7 @@ def vectorize_all(docs: t.List[str],
     """
     tfidf = TfidfVectorizer()
     tfidf.fit(docs)
-
-    def vectorize(doc: str):
-        doc_weight = 0  # total doc_weight captures length of doc
-        # doc_vector will become tfidf-weighted average of w2v vectors
-        doc_vector = np.zeros(word_vec.vector_size)
-        lookup = tfidf.transform([doc])  # get tfidf scores for all words in this document
-        for token in doc.split():
-            try:
-                vector = word_vec.word_vec(token)
-                weight = lookup[0, tfidf.vocabulary_[token]]
-            except KeyError:
-                vector = np.zeros(word_vec.vector_size)
-                weight = 0
-            doc_vector += weight * vector
-            doc_weight += weight
-        if doc_weight == 0:
-            return np.zeros(word_vec.vector_size)
-        return doc_vector / doc_weight
+    joblib.dump(tfidf, '../artifacts/tfidf.joblib')
 
     print(f'Calculating tfidf-weighted W2V vectors for {len(docs)} documents')
     # TODO: currently bork due to unpicklable functions (multiprocessing does not
@@ -49,7 +50,9 @@ def vectorize_all(docs: t.List[str],
     # cores = cores or mp.cpu_count() - 1
     # with mp.Pool(cores) as p:
     #     vectors = list(tqdm(p.imap(vectorize, docs), total=len(docs)))
-    vectors = list(tqdm(map(vectorize, docs), total=len(docs)))
+    vectors = []
+    for doc in tqdm(docs):
+        vectors.append(vectorize(doc, word_vec, tfidf))
 
     return vectors
 
