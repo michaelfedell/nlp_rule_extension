@@ -9,6 +9,7 @@ import re
 import spacy
 from gensim.models import KeyedVectors
 from tqdm import tqdm
+import pandas as pd
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -138,13 +139,14 @@ def classify_embedded(doc: str) -> str:
 
 
 if __name__ == '__main__':
+    LIMIT = 10000
+
     assert len(sys.argv) == 2
     review_path = Path(sys.argv[1])  # Path to raw reviews file
     assert review_path.exists()
-    with review_path.open() as f:
-        header = f.readline()
-        # First field is document_id; text may contain extra commas or quotation marks
-        reviews = [','.join(l.split(',')[1:]).replace('"', '') for l in f.readlines()]
+    reviews = pd.read_csv(review_path, index_col='document_id')
+    reviews = reviews[:LIMIT] if len(reviews) > LIMIT else reviews
+    review_text = reviews.document_text.values
 
     methods = {
         'naive': classify_naive,
@@ -155,6 +157,14 @@ if __name__ == '__main__':
     for method in methods:
         print('Producing labels via', method, 'strategy')
         with mp.Pool(mp.cpu_count() - 1) as p:
-            labels = list(tqdm(p.imap(methods[method], reviews), total=len(reviews)))
-        with open(f'../data/{method}_labeled_{review_path.name}.txt', 'w', encoding='utf-8') as f:
-            f.writelines(labels)
+            labels = list(tqdm(p.imap(methods[method], review_text), total=len(reviews)))
+        with open(f'../data/{method}_labeled_{review_path.stem}.txt', 'w', encoding='utf-8') as f:
+            f.writelines(l + '\n' for l in labels)
+
+    mturk_labels = pd.read_csv('../data/labeled_mturk_data.csv')
+    if len(mturk_labels) > len(labels):
+        mturk_labels = mturk_labels[:len(labels)]
+    labels = mturk_labels.label
+    labels = labels.replace({'multi': 'unk', 'na': 'unk', 'other': 'unk'})
+    with open(f'../data/manual_labeled_{review_path.stem}.txt', 'w', encoding='utf-8') as f:
+        f.writelines(l + '\n' for l in labels)
